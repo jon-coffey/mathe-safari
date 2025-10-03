@@ -32,7 +32,9 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
 
   const ensureCtx = () => {
     if (!audioCtxRef.current) {
-      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+      const w = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
+      const Ctx = w.AudioContext ?? w.webkitAudioContext;
+      if (!Ctx) throw new Error("AudioContext not supported");
       audioCtxRef.current = new Ctx();
     }
     return audioCtxRef.current!;

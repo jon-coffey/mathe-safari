@@ -23,6 +23,7 @@ export default function DuellPage() {
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const milestoneIndex = Math.floor((scores[0] + scores[1]) / 10);
+  const [rewardKey, setRewardKey] = useState<number | null>(null);
 
   const running = !setup;
   const scoreSum = useMemo(() => scores.slice(0, playersCount).reduce((a, b) => a + b, 0), [scores, playersCount]);
@@ -74,6 +75,8 @@ export default function DuellPage() {
     setQ(makeQuestion(10));
     setInput("");
     setFeedback(null);
+    setRewardKey(Date.now());
+    try { window.localStorage.removeItem("rewardShuffle"); } catch {}
     setSetup(false);
   };
 
@@ -101,6 +104,9 @@ export default function DuellPage() {
         <Card className="max-w-xl mx-auto p-6 mt-6 text-center">
           <div className="text-2xl font-bold">Gewonnen!</div>
           <div className="mt-2 text-lg">Spieler {winnerIndex + 1} hat {scores[winnerIndex]} Punkte erreicht.</div>
+          <div className="mt-4 flex justify-center">
+            <RewardSticker milestoneIndex={milestoneIndex} fixed={false} refreshKey={rewardKey ?? undefined} />
+          </div>
           <div className="mt-4 flex gap-3 justify-center">
             <Button onClick={start}>Nochmal</Button>
             <Button variant="secondary" onClick={reset}>Zurück</Button>
@@ -123,7 +129,6 @@ export default function DuellPage() {
           </div>
         </>
       )}
-      <RewardSticker milestoneIndex={milestoneIndex} />
     </div>
   );
 }

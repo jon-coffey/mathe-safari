@@ -91,19 +91,36 @@ function parseGermanNumber(text: string): number | null {
   return null;
 }
 
+// Minimal SpeechRecognition types
+type SpeechRecognitionAlternative = { transcript: string; confidence: number };
+type SpeechRecognitionResult = { 0: SpeechRecognitionAlternative; length: number; isFinal: boolean };
+type SpeechRecognitionResultList = { length: number; [index: number]: SpeechRecognitionResult };
+interface SpeechRecognitionEvent extends Event { resultIndex: number; results: SpeechRecognitionResultList }
+interface ISpeechRecognitionInstance {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: (e: SpeechRecognitionEvent) => void;
+  onend: () => void;
+  onerror: (e: { error?: string }) => void;
+  start: () => void;
+  stop: () => void;
+}
+type ISpeechRecognition = new () => ISpeechRecognitionInstance;
+
 export default function SpeechInput({ onNumber }: { onNumber: (n: number) => void }) {
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
-  const recRef = useRef<any>(null);
+  const recRef = useRef<ISpeechRecognitionInstance | null>(null);
   const manualStopRef = useRef(false);
 
   useEffect(() => {
-    const w: any = typeof window !== "undefined" ? window : {};
-    const Rec = w.SpeechRecognition || w.webkitSpeechRecognition;
+    const w = (typeof window !== "undefined" ? window : undefined) as (Window & { SpeechRecognition?: ISpeechRecognition; webkitSpeechRecognition?: ISpeechRecognition }) | undefined;
+    const Rec = w?.SpeechRecognition || w?.webkitSpeechRecognition;
     if (Rec) setSupported(true);
   }, []);
 
-  const handleResult = useCallback((e: any) => {
+  const handleResult = useCallback((e: SpeechRecognitionEvent) => {
     const idx = e.resultIndex ?? 0;
     const text: string = (e.results?.[idx]?.[0]?.transcript || "").trim();
     const n = parseGermanNumber(text);
@@ -113,7 +130,7 @@ export default function SpeechInput({ onNumber }: { onNumber: (n: number) => voi
   }, [onNumber]);
 
   const start = () => {
-    const w: any = window as any;
+    const w = window as Window & { SpeechRecognition?: ISpeechRecognition; webkitSpeechRecognition?: ISpeechRecognition };
     const Rec = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!Rec) return;
     manualStopRef.current = false;

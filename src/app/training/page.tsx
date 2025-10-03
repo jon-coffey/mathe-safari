@@ -106,7 +106,7 @@ export default function TrainingPage() {
   };
 
   return (
-    <div className="pb-28">
+    <div>
       <HUD modeLabel={`Training`} score={score} timeLeftSec={started ? timeLeftSec : undefined} />
 
       {!started ? (
@@ -136,6 +136,9 @@ export default function TrainingPage() {
         <Card className="max-w-xl mx-auto p-6 mt-6 text-center">
           <div className="text-2xl font-bold">Zeit um!</div>
           <div className="mt-2 text-lg">Punktestand: <b>{score}</b></div>
+          <div className="mt-4 flex justify-center">
+            <RewardSticker milestoneIndex={milestoneIndex} fixed={false} />
+          </div>
           <div className="mt-4 flex gap-3 justify-center">
             <Button onClick={start}>Nochmal</Button>
           </div>
@@ -152,8 +155,6 @@ export default function TrainingPage() {
           </div>
         </>
       )}
-
-      <RewardSticker milestoneIndex={milestoneIndex} />
     </div>
   );
 }

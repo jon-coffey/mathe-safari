@@ -54,9 +54,10 @@ export default function Header() {
         <div className="flex items-center gap-2">
           {speech.supported && (
             <Button
-              variant="secondary"
+              variant={speech.listening ? "default" : "secondary"}
               size="icon"
               aria-label={speech.listening ? "Spracheingabe beenden" : "Spracheingabe starten"}
+              aria-pressed={speech.listening}
               onClick={() => speech.toggle()}
             >
               {speech.listening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}

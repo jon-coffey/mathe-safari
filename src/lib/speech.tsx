@@ -1,5 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 // Simple German number parser 0..99 (digits, words, composites like einundzwanzig)
 function parseGermanNumber(text: string): number | null {
@@ -43,7 +52,7 @@ function parseGermanNumber(text: string): number | null {
     neunzehn: 19,
     zwanzig: 20,
     dreissig: 30,
-    "dreißig": 30,
+    dreißig: 30,
     vierzig: 40,
     fuenfzig: 50,
     funfzig: 50,
@@ -69,7 +78,7 @@ function parseGermanNumber(text: string): number | null {
   const tens: Record<string, number> = {
     zwanzig: 20,
     dreissig: 30,
-    "dreißig": 30,
+    dreißig: 30,
     vierzig: 40,
     fuenfzig: 50,
     funfzig: 50,
@@ -78,7 +87,9 @@ function parseGermanNumber(text: string): number | null {
     achtzig: 80,
     neunzig: 90,
   };
-  const m = t.match(/^(ein|eins|zwei|drei|vier|fuenf|funf|sechs|sieben|acht|neun)und(zwanzig|dreissig|dreißig|vierzig|fuenfzig|funfzig|sechzig|siebzig|achtzig|neunzig)$/);
+  const m = t.match(
+    /^(ein|eins|zwei|drei|vier|fuenf|funf|sechs|sieben|acht|neun)und(zwanzig|dreissig|dreißig|vierzig|fuenfzig|funfzig|sechzig|siebzig|achtzig|neunzig)$/
+  );
   if (m) {
     return (units[m[1]] ?? 0) + (tens[m[2]] ?? 0);
   }
@@ -119,54 +130,46 @@ export function SpeechProvider({ children }: { children: React.ReactNode }) {
     if (n !== null) emit(n);
   }, []);
 
-  const start = useCallback(async () => {
+  const start = useCallback(() => {
     const w: any = window as any;
     const Rec = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!Rec) return;
     manualStopRef.current = false;
-    // Preflight mic permission (helps some browsers)
-    try {
-      if (navigator?.mediaDevices?.getUserMedia) {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-      }
-    } catch (e) {
-      // user may deny; SpeechRecognition could still prompt
-    }
+    try { navigator?.mediaDevices?.getUserMedia?.({ audio: true }); } catch {}
     if (!recRef.current) {
-      recRef.current = new Rec();
-      recRef.current.lang = "de-DE";
-      recRef.current.continuous = true;
-      recRef.current.interimResults = false;
-      recRef.current.onresult = handleResult;
-      recRef.current.onstart = () => setListening(true);
-      recRef.current.onend = () => {
+      const rec = new Rec();
+      rec.lang = "de-DE";
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.onresult = handleResult;
+      rec.onstart = () => setListening(true);
+      rec.onend = () => {
         if (!manualStopRef.current) {
-          try { recRef.current.start(); } catch { setListening(false); }
+          try { rec.start(); } catch { setListening(false); }
         } else {
           setListening(false);
         }
       };
-      recRef.current.onerror = (ev: any) => {
+      rec.onerror = (ev: any) => {
         const name = ev?.error || "";
-        // If permission denied or service not allowed, stop retrying
         if (name === "not-allowed" || name === "service-not-allowed") {
           manualStopRef.current = true;
           setListening(false);
-          try { recRef.current.stop(); } catch {}
+          try { rec.stop(); } catch {}
           return;
         }
         if (!manualStopRef.current) {
-          try { recRef.current.start(); } catch { setListening(false); }
+          try { rec.start(); } catch { setListening(false); }
         } else {
           setListening(false);
         }
       };
+      recRef.current = rec;
     }
     try {
-      // Ensure we don't call start twice
       try { recRef.current.stop(); } catch {}
       recRef.current.start();
-      // listening will flip true on onstart
+      setListening(true);
     } catch {
       setListening(false);
     }

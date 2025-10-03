@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HUD from "@/components/HUD";
 import QuestionDisplay from "@/components/QuestionDisplay";
 import Keypad from "@/components/Keypad";
@@ -21,6 +21,7 @@ export default function ZeitPage() {
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   // milestone changes every 10 correct answers
   const milestoneIndex = Math.floor(score / 10);
+  const [rewardKey, setRewardKey] = useState<number | null>(null);
   const sound = useSound();
   const intervalRef = useRef<number | null>(null);
 
@@ -49,7 +50,7 @@ export default function ZeitPage() {
     };
   }, [running, sound]);
 
-  const done = running && timeLeft === 0;
+  // const done = running && timeLeft === 0; // no longer used
 
   const onDigit = (d: number) => setInput((v) => (v + d).slice(0, 3));
   const onBackspace = () => setInput((v) => v.slice(0, -1));
@@ -90,41 +91,39 @@ export default function ZeitPage() {
     setFeedback(null);
     setTimeLeft(duration);
     setRunning(true);
+    setRewardKey(Date.now());
+    try { window.localStorage.removeItem("rewardShuffle"); } catch {}
   };
 
   const stop = () => {
     setRunning(false);
   };
-
   return (
-    <div className="pb-28">
+    <div>
       <HUD modeLabel="Zeitmodus" score={score} timeLeftSec={running ? timeLeft : undefined} />
 
       {!running ? (
-        <Card className="max-w-xl mx-auto p-6 mt-6">
-          <div className="text-xl">Wähle deine Runde:</div>
-          <div className="flex gap-3 mt-4 flex-wrap">
-            {[30, 45, 60, 90].map((t) => (
-              <Button
-                key={t}
-                variant={duration === t ? "default" : "secondary"}
-                onClick={() => setDuration(t)}
-                className="text-lg"
-                aria-pressed={duration === t}
-              >
-                {t}s
+        <Card className="max-w-xl mx-auto p-6 mt-6 text-center">
+          <div className="text-xl">Wähle die Dauer und starte die Runde.</div>
+          <div className="mt-4 flex gap-2 justify-center">
+            {[30, 45, 60, 90].map((n) => (
+              <Button key={n} variant={duration === n ? "default" : "secondary"} onClick={() => setDuration(n)}>
+                {n}s
               </Button>
             ))}
           </div>
           <Button className="mt-6 w-full text-xl py-7" onClick={start}>Start</Button>
         </Card>
-      ) : done ? (
+      ) : timeLeft === 0 ? (
         <Card className="max-w-xl mx-auto p-6 mt-6 text-center">
           <div className="text-2xl font-bold">Zeit abgelaufen!</div>
           <div className="mt-2 text-lg">Punktestand: {score}</div>
           <div className="mt-4 flex gap-3 justify-center">
             <Button onClick={start}>Nochmal</Button>
             <Button variant="secondary" onClick={stop}>Beenden</Button>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <RewardSticker milestoneIndex={milestoneIndex} fixed={false} refreshKey={rewardKey ?? undefined} />
           </div>
         </Card>
       ) : (
@@ -135,8 +134,6 @@ export default function ZeitPage() {
           </div>
         </>
       )}
-
-      <RewardSticker milestoneIndex={milestoneIndex} />
     </div>
   );
 }

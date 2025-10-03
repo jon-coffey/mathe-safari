@@ -4,9 +4,20 @@ export type Question = {
   answer: number;
 };
 
-export function makeQuestion(maxFactor: number = 10): Question {
-  const a = Math.floor(Math.random() * (maxFactor + 1));
-  const b = Math.floor(Math.random() * (maxFactor + 1));
+export function makeQuestion(maxFactor: number = 10, opts?: { avoidTrivial?: boolean }): Question {
+  const avoidTrivial = opts?.avoidTrivial !== false; // default true
+  const pool = (() => {
+    const hi = Math.max(2, Math.min(9, Math.floor(maxFactor)));
+    if (avoidTrivial) {
+      // 2..hi (usually 2..9)
+      return Array.from({ length: hi - 1 }, (_, i) => i + 2);
+    }
+    // 0..maxFactor
+    return Array.from({ length: Math.floor(maxFactor) + 1 }, (_, i) => i);
+  })();
+  const pick = () => pool[Math.floor(Math.random() * pool.length)];
+  const a = pick();
+  const b = pick();
   return { a, b, answer: a * b };
 }
 

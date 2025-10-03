@@ -17,10 +17,11 @@ export default function HighscorePage() {
   const [running, setRunning] = useState(false);
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [lastScore, setLastScore] = useState<number | null>(null);
   const [q, setQ] = useState(() => makeQuestion(10));
   const [input, setInput] = useState("");
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
-  const milestoneIndex = Math.floor(score / 10);
 
   const onDigit = (d: number) => setInput((v) => (v + d).slice(0, 3));
   const onBackspace = () => setInput((v) => v.slice(0, -1));
@@ -39,6 +40,8 @@ export default function HighscorePage() {
       setFeedback("wrong");
       sound.playError();
       setRunning(false);
+      setFinished(true);
+      setLastScore(score);
       const finalScore = score;
       const old = getHighscore();
       if (finalScore > old) {
@@ -62,6 +65,9 @@ export default function HighscorePage() {
     setQ(makeQuestion(10));
     setInput("");
     setFeedback(null);
+    setFinished(false);
+    setLastScore(null);
+    try { window.localStorage.removeItem("rewardShuffle"); } catch {}
     setRunning(true);
   };
 
@@ -71,9 +77,24 @@ export default function HighscorePage() {
 
       {!running ? (
         <Card className="max-w-xl mx-auto p-6 mt-6 text-center">
-          <div className="text-xl">Schaffe so viele richtige Antworten wie möglich – bis zum ersten Fehler.</div>
-          <div className="mt-4 text-lg">Dein Highscore: <b>{best}</b></div>
-          <Button className="mt-6 w-full text-xl py-7" onClick={start}>Start</Button>
+          {finished ? (
+            <>
+              <div className="text-2xl font-bold">Runde vorbei!</div>
+              <div className="mt-2 text-lg">Punktestand: <b>{lastScore}</b></div>
+              <div className="mt-4 flex justify-center">
+                <RewardSticker milestoneIndex={Math.floor((lastScore ?? 0) / 10)} fixed={false} />
+              </div>
+              <div className="mt-4 flex gap-3 justify-center">
+                <Button onClick={start}>Nochmal</Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-xl">Schaffe so viele richtige Antworten wie möglich – bis zum ersten Fehler.</div>
+              <div className="mt-4 text-lg">Dein Highscore: <b>{best}</b></div>
+              <Button className="mt-6 w-full text-xl py-7" onClick={start}>Start</Button>
+            </>
+          )}
         </Card>
       ) : (
         <>
@@ -83,8 +104,6 @@ export default function HighscorePage() {
           </div>
         </>
       )}
-
-      <RewardSticker milestoneIndex={milestoneIndex} />
     </div>
   );
 }
