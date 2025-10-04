@@ -69,7 +69,7 @@ export default function RewardSticker({ milestoneIndex, fixed = true, refreshKey
         <img
           src={src}
           alt="Belohnung"
-          className="h-24 w-24 sm:h-28 sm:w-28 object-contain"
+          className="h-48 w-48 sm:h-64 sm:w-64 object-contain"
           onError={() => {
             // Only use local gifs: advance to next in local order
             const arr = orderRef.current ?? FALLBACK_GIFS;

@@ -7,13 +7,19 @@ export default function HUD({
   modeLabel,
   score,
   timeLeftSec,
+  totalTimeSec,
   progress,
 }: {
   modeLabel: string;
   score: number;
   timeLeftSec?: number;
+  totalTimeSec?: number;
   progress?: number; // 0..100
 }) {
+  const timePercent = typeof timeLeftSec === "number" && typeof totalTimeSec === "number" 
+    ? Math.max(0, Math.min(100, (timeLeftSec / totalTimeSec) * 100))
+    : undefined;
+
   return (
     <div className="w-full max-w-5xl mx-auto mt-4">
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -33,6 +39,13 @@ export default function HUD({
           )}
         </div>
       </div>
+      {/* Mobile time progress bar */}
+      {typeof timePercent === "number" && (
+        <div className="mt-3 sm:hidden flex items-center gap-2">
+          <Clock className="h-4 w-4 text-sky-600" />
+          <Progress value={timePercent} className="h-3 flex-1" aria-label="Verbleibende Zeit" />
+        </div>
+      )}
       {typeof progress === "number" && (
         <div className="mt-3 flex items-center gap-2">
           <Star className="h-4 w-4 text-amber-500" />

@@ -101,6 +101,7 @@ interface ISpeechRecognitionInstance {
   continuous: boolean;
   interimResults: boolean;
   onresult: (e: SpeechRecognitionEvent) => void;
+  onstart: () => void;
   onend: () => void;
   onerror: (e: { error?: string }) => void;
   start: () => void;
@@ -113,6 +114,7 @@ export default function SpeechInput({ onNumber }: { onNumber: (n: number) => voi
   const [listening, setListening] = useState(false);
   const recRef = useRef<ISpeechRecognitionInstance | null>(null);
   const manualStopRef = useRef(false);
+  const startingRef = useRef(false);
 
   useEffect(() => {
     const w = (typeof window !== "undefined" ? window : undefined) as (Window & { SpeechRecognition?: ISpeechRecognition; webkitSpeechRecognition?: ISpeechRecognition }) | undefined;
@@ -132,42 +134,88 @@ export default function SpeechInput({ onNumber }: { onNumber: (n: number) => voi
   const start = () => {
     const w = window as Window & { SpeechRecognition?: ISpeechRecognition; webkitSpeechRecognition?: ISpeechRecognition };
     const Rec = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!Rec) return;
+    if (!Rec || startingRef.current || listening) return;
+    
+    startingRef.current = true;
     manualStopRef.current = false;
     const rec = new Rec();
     rec.lang = "de-DE";
     rec.continuous = true;
     rec.interimResults = false;
     rec.onresult = handleResult;
+    rec.onstart = () => {
+      startingRef.current = false;
+      setListening(true);
+    };
     rec.onend = () => {
+      setListening(false);
+      startingRef.current = false;
       if (!manualStopRef.current) {
-        // restart for persistent listening
-        try {
-          rec.start();
-        } catch {}
-      } else {
-        setListening(false);
+        // restart for persistent listening with delay
+        setTimeout(() => {
+          if (!manualStopRef.current && recRef.current && !startingRef.current) {
+            try {
+              startingRef.current = true;
+              recRef.current.start();
+            } catch {
+              startingRef.current = false;
+            }
+          }
+        }, 300);
       }
     };
-    rec.onerror = () => {
-      // attempt restart on recoverable errors
+    rec.onerror = (ev: { error?: string }) => {
+      const name = ev.error || "";
+      startingRef.current = false;
+      
+      // Don't restart on permission errors
+      if (name === "not-allowed" || name === "service-not-allowed") {
+        manualStopRef.current = true;
+        setListening(false);
+        try { rec.stop(); } catch {}
+        return;
+      }
+      
+      // Don't restart on no-speech or aborted
+      if (name === "no-speech" || name === "aborted") {
+        return;
+      }
+      
+      // attempt restart on recoverable errors with delay
       if (!manualStopRef.current) {
-        try {
-          rec.start();
-        } catch {
-          setListening(false);
-        }
+        setListening(false);
+        setTimeout(() => {
+          if (!manualStopRef.current && recRef.current && !startingRef.current) {
+            try {
+              startingRef.current = true;
+              recRef.current.start();
+            } catch {
+              startingRef.current = false;
+            }
+          }
+        }, 500);
       } else {
         setListening(false);
       }
     };
     recRef.current = rec;
-    setListening(true);
-    rec.start();
+    
+    setTimeout(() => {
+      try {
+        if (recRef.current && !manualStopRef.current && startingRef.current) {
+          recRef.current.start();
+        } else {
+          startingRef.current = false;
+        }
+      } catch {
+        startingRef.current = false;
+      }
+    }, 100);
   };
 
   const stop = () => {
     manualStopRef.current = true;
+    startingRef.current = false;
     try {
       recRef.current?.stop?.();
     } catch {}

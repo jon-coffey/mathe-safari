@@ -100,7 +100,7 @@ export default function ZeitPage() {
   };
   return (
     <div>
-      <HUD modeLabel="Zeitmodus" score={score} timeLeftSec={running ? timeLeft : undefined} />
+      <HUD modeLabel="Zeitmodus" score={score} timeLeftSec={running ? timeLeft : undefined} totalTimeSec={duration} />
 
       {!running ? (
         <Card className="max-w-xl mx-auto p-6 mt-6 text-center">

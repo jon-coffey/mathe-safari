@@ -19,11 +19,11 @@ export default function RewardOverlay({
   if (!visible) return null;
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
-      <div className="bg-white/60 backdrop-blur rounded-2xl shadow-xl p-3 animate-bounceIn">
+      <div className="bg-white/60 backdrop-blur rounded-2xl shadow-xl p-4 animate-bounceIn">
         <img
           src={imageUrl}
           alt="Tolle Leistung!"
-          className="h-48 w-48 object-contain drop-shadow-lg"
+          className="h-56 w-56 sm:h-72 sm:w-72 object-contain drop-shadow-lg"
         />
       </div>
     </div>

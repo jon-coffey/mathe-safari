@@ -68,12 +68,14 @@ export default function TrainingPage() {
     } else {
       setFeedback("wrong");
       sound.playError();
+      const nextAllowed = Math.min(startSeconds * 1000, allowedMs + 500); // increase time after mistake
+      setAllowedMs(nextAllowed);
       setTimeout(() => {
         setFeedback(null);
         const nq = makeQuestion(10);
         setQ(nq);
         setInput("");
-        resetTimer(allowedMs); // keep same time after mistake
+        resetTimer(nextAllowed);
       }, 200);
     }
   };
