@@ -352,7 +352,7 @@ export function SpeechProvider({ children }: { children: React.ReactNode }) {
         if (!contentLength && received) {
           setProgress(80);
         }
-        const blob = new Blob(chunks, { type: "application/gzip" });
+        const blob = new Blob(chunks as BlobPart[], { type: "application/gzip" });
         if (modelUrlRef.current) {
           URL.revokeObjectURL(modelUrlRef.current);
         }
@@ -510,7 +510,7 @@ export function SpeechProvider({ children }: { children: React.ReactNode }) {
       streamRef.current = stream;
       console.log('[Speech] Mikrofon-Zugriff erhalten');
 
-      const recognizer = await ensureRecognizer(audioContext.sampleRate);
+      await ensureRecognizer(audioContext.sampleRate);
 
       const source = audioContext.createMediaStreamSource(stream);
       sourceRef.current = source;

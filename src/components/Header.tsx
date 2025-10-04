@@ -14,7 +14,7 @@ function isFullscreen() {
 async function enterFullscreen() {
   try {
     await document.documentElement.requestFullscreen();
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
@@ -22,7 +22,7 @@ async function enterFullscreen() {
 async function exitFullscreen() {
   try {
     await document.exitFullscreen();
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

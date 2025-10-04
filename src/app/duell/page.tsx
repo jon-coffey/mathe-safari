@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import HUD from "@/components/HUD";
 import QuestionDisplay from "@/components/QuestionDisplay";
 import Keypad from "@/components/Keypad";
@@ -38,7 +38,7 @@ export default function DuellPage() {
   const hasWinner = winnerIndex !== -1;
   const timePercent = Math.max(0, Math.min(100, (timeLeftMs / (timePerQuestion * 1000)) * 100));
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     if (timerRef.current) window.clearInterval(timerRef.current);
     setTimeLeftMs(timePerQuestion * 1000);
     timerRef.current = window.setInterval(() => {
@@ -58,7 +58,7 @@ export default function DuellPage() {
         return Math.max(0, next);
       });
     }, 100);
-  };
+  }, [timePerQuestion, playersCount]);
 
   useEffect(() => {
     if (running && !hasWinner) {
@@ -67,7 +67,7 @@ export default function DuellPage() {
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
     };
-  }, [running, hasWinner, turn]);
+  }, [running, hasWinner, turn, resetTimer]);
 
   const onDigit = (d: number) => setInput((v) => (v + d).slice(0, 3));
   const onBackspace = () => setInput((v) => v.slice(0, -1));
