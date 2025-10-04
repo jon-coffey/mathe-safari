@@ -53,15 +53,27 @@ export default function Header() {
         </div>
         <div className="flex items-center gap-2">
           {speech.supported && (
-            <Button
-              variant={speech.listening ? "default" : "secondary"}
-              size="icon"
-              aria-label={speech.listening ? "Spracheingabe beenden" : "Spracheingabe starten"}
-              aria-pressed={speech.listening}
-              onClick={() => speech.toggle()}
-            >
-              {speech.listening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-            </Button>
+            <div className="relative">
+              <Button
+                variant={speech.listening ? "default" : "secondary"}
+                size="icon"
+                aria-label={speech.listening ? "Spracheingabe beenden" : "Spracheingabe starten"}
+                aria-pressed={speech.listening}
+                onClick={() => speech.toggle()}
+                disabled={speech.loading}
+                className="relative overflow-hidden"
+              >
+                {speech.listening && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white/30 to-transparent transition-all duration-75"
+                    style={{ height: `${Math.min(100, speech.volume * 1000)}%` }}
+                  />
+                )}
+                <span className="relative z-10">
+                  {speech.listening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+                </span>
+              </Button>
+            </div>
           )}
           <Button
             variant="secondary"

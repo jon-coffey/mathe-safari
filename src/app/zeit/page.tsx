@@ -55,14 +55,14 @@ export default function ZeitPage() {
   const onDigit = (d: number) => setInput((v) => (v + d).slice(0, 3));
   const onBackspace = () => setInput((v) => v.slice(0, -1));
   const handleAnswer = (val: number) => {
-    if (!running) return;
+    if (!running || timeLeft === 0) return;
     if (checkAnswer(q, val)) {
       setScore((s) => s + 1);
       setFeedback("correct");
       sound.playSuccess();
       setTimeout(() => {
         setFeedback(null);
-        setQ(makeQuestion(10));
+        setQ(makeQuestion(10, { avoidAnswer: q.answer }));
         setInput("");
       }, 300);
     } else {
@@ -70,7 +70,7 @@ export default function ZeitPage() {
       sound.playError();
       setTimeout(() => {
         setFeedback(null);
-        setQ(makeQuestion(10));
+        setQ(makeQuestion(10, { avoidAnswer: q.answer }));
         setInput("");
       }, 250);
     }
@@ -81,8 +81,12 @@ export default function ZeitPage() {
     handleAnswer(val);
   };
 
-  // subscribe to global speech numbers
-  useSpeechNumber((n) => handleAnswer(n));
+  // subscribe to global speech numbers only when running
+  useSpeechNumber((n) => {
+    if (running && timeLeft > 0) {
+      handleAnswer(n);
+    }
+  });
 
   const start = () => {
     setScore(0);

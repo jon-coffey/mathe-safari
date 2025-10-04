@@ -60,7 +60,7 @@ export default function TrainingPage() {
       setAllowedMs(nextAllowed);
       setTimeout(() => {
         setFeedback(null);
-        const nq = makeQuestion(10);
+        const nq = makeQuestion(10, { avoidAnswer: q.answer });
         setQ(nq);
         setInput("");
         resetTimer(nextAllowed);
@@ -72,7 +72,7 @@ export default function TrainingPage() {
       setAllowedMs(nextAllowed);
       setTimeout(() => {
         setFeedback(null);
-        const nq = makeQuestion(10);
+        const nq = makeQuestion(10, { avoidAnswer: q.answer });
         setQ(nq);
         setInput("");
         resetTimer(nextAllowed);
@@ -84,8 +84,12 @@ export default function TrainingPage() {
     handleAnswer(val);
   };
 
-  // subscribe to global speech numbers
-  useSpeechNumber((n) => handleAnswer(n));
+  // subscribe to global speech numbers only when started and time > 0
+  useSpeechNumber((n) => {
+    if (started && timeLeftMs > 0) {
+      handleAnswer(n);
+    }
+  });
 
   useEffect(() => {
     return () => {

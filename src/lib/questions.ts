@@ -4,8 +4,10 @@ export type Question = {
   answer: number;
 };
 
-export function makeQuestion(maxFactor: number = 10, opts?: { avoidTrivial?: boolean }): Question {
+export function makeQuestion(maxFactor: number = 10, opts?: { avoidTrivial?: boolean; avoidAnswer?: number }): Question {
   const avoidTrivial = opts?.avoidTrivial !== false; // default true
+  const avoidAnswer = opts?.avoidAnswer;
+  
   const pool = (() => {
     const hi = Math.max(2, Math.min(9, Math.floor(maxFactor)));
     if (avoidTrivial) {
@@ -15,7 +17,24 @@ export function makeQuestion(maxFactor: number = 10, opts?: { avoidTrivial?: boo
     // 0..maxFactor
     return Array.from({ length: Math.floor(maxFactor) + 1 }, (_, i) => i);
   })();
+  
   const pick = () => pool[Math.floor(Math.random() * pool.length)];
+  
+  // Versuche max 20 mal eine Frage zu generieren, die nicht die gleiche Antwort hat
+  let attempts = 0;
+  while (attempts < 20) {
+    const a = pick();
+    const b = pick();
+    const answer = a * b;
+    
+    // Wenn keine zu vermeidende Antwort angegeben oder Antwort unterschiedlich, nutze diese
+    if (avoidAnswer === undefined || answer !== avoidAnswer) {
+      return { a, b, answer };
+    }
+    attempts++;
+  }
+  
+  // Fallback: Nach 20 Versuchen gib irgendwas zurück
   const a = pick();
   const b = pick();
   return { a, b, answer: a * b };

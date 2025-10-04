@@ -1,5 +1,8 @@
 "use client";
 
+import { useSpeech } from "@/lib/speech";
+import { useEffect, useState } from "react";
+
 export default function QuestionDisplay({
   question,
   input,
@@ -9,6 +12,18 @@ export default function QuestionDisplay({
   input: string;
   feedback?: "correct" | "wrong" | null;
 }) {
+  const speech = useSpeech();
+  const [lastTranscript, setLastTranscript] = useState("");
+
+  useEffect(() => {
+    const unsub = speech.onTranscript((info) => {
+      if (info.text && info.text.trim()) {
+        setLastTranscript(info.text);
+        setTimeout(() => setLastTranscript(""), 2000);
+      }
+    });
+    return unsub;
+  }, [speech]);
   return (
     <div
       className={
@@ -24,7 +39,7 @@ export default function QuestionDisplay({
         {question}
       </div>
       <div className="mt-5 text-4xl sm:text-6xl font-black text-[#2563eb] min-h-16">
-        {input || "?"}
+        {input || lastTranscript || "?"}
       </div>
     </div>
   );

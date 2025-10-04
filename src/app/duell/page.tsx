@@ -85,7 +85,7 @@ export default function DuellPage() {
       sound.playSuccess();
       setTimeout(() => {
         setFeedback(null);
-        setQ(makeQuestion(10));
+        setQ(makeQuestion(10, { avoidAnswer: q.answer }));
         setInput("");
         if (!hasWinner) nextTurn();
       }, 250);
@@ -94,7 +94,7 @@ export default function DuellPage() {
       sound.playError();
       setTimeout(() => {
         setFeedback(null);
-        setQ(makeQuestion(10));
+        setQ(makeQuestion(10, { avoidAnswer: q.answer }));
         setInput("");
         nextTurn();
       }, 250);
@@ -106,8 +106,12 @@ export default function DuellPage() {
     handleAnswer(val);
   };
 
-  // subscribe to global speech numbers
-  useSpeechNumber((n) => handleAnswer(n));
+  // subscribe to global speech numbers only when running
+  useSpeechNumber((n) => {
+    if (running && !hasWinner && timeLeftMs > 0) {
+      handleAnswer(n);
+    }
+  });
 
   const start = () => {
     setScores([0, 0]);

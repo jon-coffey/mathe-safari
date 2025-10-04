@@ -33,7 +33,7 @@ export default function HighscorePage() {
       sound.playSuccess();
       setTimeout(() => {
         setFeedback(null);
-        setQ(makeQuestion(10));
+        setQ(makeQuestion(10, { avoidAnswer: q.answer }));
         setInput("");
       }, 250);
     } else {
@@ -56,8 +56,12 @@ export default function HighscorePage() {
     handleAnswer(val);
   };
 
-  // subscribe to global speech numbers
-  useSpeechNumber((n) => handleAnswer(n));
+  // subscribe to global speech numbers only when running
+  useSpeechNumber((n) => {
+    if (running) {
+      handleAnswer(n);
+    }
+  });
 
   const start = () => {
     setBest(getHighscore());

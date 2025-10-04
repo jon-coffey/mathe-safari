@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Timer, Infinity, Users2, Sparkles, Play } from "lucide-react";
+import { Timer, Infinity, Users2, Sparkles, Play, Mic } from "lucide-react";
 
 export default function Home() {
   const tiles = [
@@ -34,6 +34,13 @@ export default function Home() {
       icon: <Sparkles className="h-10 w-10" />,
       title: "Training",
       desc: "Steigende Schwierigkeit",
+    },
+    {
+      href: "/debug-speech",
+      color: "from-[#fee2e2] to-[#fecaca]",
+      icon: <Mic className="h-10 w-10" />,
+      title: "Debug Modus",
+      desc: "Spracheingabe testen",
     },
   ];
 
